@@ -9,7 +9,7 @@
     "discription": "My first pwa!",
     "dir": "ltr",
     "lang": "en-US",
-    "orientation": "portprait-primary",
+    "orientation": "portrait-primary",
     "icons": [
         {
             "src": "/src/images/icons/app-icon-48x48.png",
