@@ -1,3 +1,6 @@
+importScripts('/src/js/idb.js');
+importScripts('/src/js/db.js');
+
 var CACHE_STATIC_NAME = 'static-v10';
 var CACHE_DYNAMIC_NAME = 'dynamic-v2';
 var STATIC_ASSETS = [
@@ -11,7 +14,8 @@ var STATIC_ASSETS = [
     '/src/css/feed.css',
     '/src/js/app.js',
     '/src/js/feed.js',
-    '/src/images/main-image.jpg'
+    '/src/images/main-image.jpg',
+    '/src/js/idb.js'
 ];
 
 function isInArray(url, target) {
@@ -106,28 +110,31 @@ self.addEventListener('activate', function(event) {
 // });
 
 self.addEventListener('fetch', function(event) {
-    var url = 'https://httpbin.org/get';
+    var url = 'https://my-first-pwa-ebf14.firebaseio.com/posts.json';
     // cache then network -- update cache result
     if (event.request.url.indexOf(url) > -1) {
-        console.log('CACHE then network', event.request.url);
         event.respondWith(
             caches.open(CACHE_DYNAMIC_NAME)
                 .then(function(cache) {
                     return fetch(event.request)
                         .then(function(response) {
-                            cache.put(event.request.url, response.clone());
+                            response.clone().json()
+                                .then(data => {
+                                    clearAllData('posts');
+                                    for (let row of Object.values(data)) {
+                                        writeData('posts', row);
+                                    }
+                                })
                             return response;
-                        })
+                        });
                 })
         );
     } else if (isInArray(event.request.url, STATIC_ASSETS)) {
-        console.log('STATIC_ASSETS', event.request.url);
         event.respondWith(
             caches.match(event.request.url)
         );
     } else {
         // cache with network fallback
-        console.log('CACHE with network fallback', event.request.url);
         event.respondWith(
             caches.match(event.request)
                 .then(function(response) {
@@ -136,7 +143,6 @@ self.addEventListener('fetch', function(event) {
                     } else {
                         return fetch(event.request)
                             .then(function(res) {
-                                console.log(res);
                                 return caches.open(CACHE_DYNAMIC_NAME)
                                     .then(cache => cache.put(event.request.url, res.clone()))
                                     .then(done => res);

@@ -57,6 +57,10 @@ http-server@^0.10.0:
     portfinder "^1.0.13"
     union "~0.4.3"
 
+idb@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/idb/-/idb-2.0.4.tgz#cf6d4a9ab077a207ca6e62564d1552401f5cd458"
+
 mime@^1.2.11:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/mime/-/mime-1.4.1.tgz#121f9ebc49e3766f311a76e1fa1c8003c4b03aa6"
