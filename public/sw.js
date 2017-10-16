@@ -169,17 +169,20 @@ self.addEventListener('sync', function(event) {
             readAllData('sync-posts')
                 .then(data => {
                     data.forEach(post => {
-                        fetch('https://my-first-pwa-ebf14.firebaseio.com/posts.json', {
+                        fetch('https://us-central1-my-first-pwa-ebf14.cloudfunctions.net/storePostData', {
                             method: "POST",
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json',
                             },
                             body: JSON.stringify(post)
-                        }).then(res => {
-                            console.log('[Service worker] post sync is sent!', post);
-                            deleteData('sync-posts', post.id);
-                        }).catch(err => console.log('Error while sending sync data', err));
+                        })
+                            .then(res => res.json())
+                            .then(res => {
+                                console.log('[Service worker] post sync is sent!', res);
+                                deleteData('sync-posts', res.id);
+                            })
+                            .catch(err => console.log('Error while sending sync data', err));
                     })
                 })
         );

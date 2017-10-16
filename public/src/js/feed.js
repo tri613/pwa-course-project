@@ -82,18 +82,22 @@ function onBtnClicked(event) {
 var url = 'https://my-first-pwa-ebf14.firebaseio.com/posts.json';
 var networkDataReceived = false;
 
-fetch(url)
-  .then(function(res) {
-    return res.json();
-  })
-  .then(function(data) {
-    networkDataReceived = true;
-    var rows = [];
-    for (let row of Object.values(data)) {
-      rows.push(row);
-    }
-    updateUI(rows);
-  });
+function updateCards() {
+  fetch(url)
+    .then(function(res) {
+      return res.json();
+    })
+    .then(function(data) {
+      networkDataReceived = true;
+      var rows = [];
+      for (let row of Object.values(data)) {
+        rows.push(row);
+      }
+      updateUI(rows);
+    });
+}
+
+updateCards();
 
 if ('indexedDB' in window) {
   readAllData('posts')
@@ -121,7 +125,7 @@ form.addEventListener('submit', function(e) {
     title: titleInput.value,
     location: locationInput.value,
     id: new Date().toISOString(),
-    image: `http://placehold.it/500x320?text=${titleInput.value}`
+    image: `https://placehold.it/500x320?text=${titleInput.value}`
   };
 
   if ('serviceWorker' in navigator && 'SyncManager' in window) {
@@ -146,7 +150,7 @@ form.addEventListener('submit', function(e) {
 });
 
 function sendData(data) {
-  return fetch(url, {
+  return fetch('https://us-central1-my-first-pwa-ebf14.cloudfunctions.net/storePostData', {
     method: "POST",
     headers: {
       'Content-Type': 'application/json',
@@ -157,7 +161,7 @@ function sendData(data) {
     .then(function(res) {
       var data = { message: 'Post sent!' };
       snackbar.MaterialSnackbar.showSnackbar(data);
-      updateUI();
+      updateCards();
     });
 }
 
