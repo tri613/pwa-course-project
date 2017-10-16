@@ -158,3 +158,30 @@ self.addEventListener('fetch', function(event) {
         );
     }
 });
+
+// whenever the service worker thinks it has network connection
+// this event will be triggered
+self.addEventListener('sync', function(event) {
+    console.log('[Service Worker] sync event triggered!', event);
+    if (event.tag === 'sync-new-posts') {
+        console.log('[Service Worker] sync-new-posts!');
+        event.waitUntil(
+            readAllData('sync-posts')
+                .then(data => {
+                    data.forEach(post => {
+                        fetch('https://my-first-pwa-ebf14.firebaseio.com/posts.json', {
+                            method: "POST",
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify(post)
+                        }).then(res => {
+                            console.log('[Service worker] post sync is sent!', post);
+                            deleteData('sync-posts', post.id);
+                        }).catch(err => console.log('Error while sending sync data', err));
+                    })
+                })
+        );
+    }
+})

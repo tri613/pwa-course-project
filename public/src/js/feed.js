@@ -2,6 +2,8 @@ var shareImageButton = document.querySelector('#share-image-button');
 var createPostArea = document.querySelector('#create-post');
 var closeCreatePostModalButton = document.querySelector('#close-create-post-modal-btn');
 var sharedMomentsArea = document.querySelector('#shared-moments');
+var form = document.querySelector('form');
+var snackbar = document.querySelector('#confirmation-toast');
 
 function openCreatePostModal() {
   createPostArea.style.display = 'block';
@@ -101,6 +103,63 @@ if ('indexedDB' in window) {
       }
     });
 } 
+
+form.addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  var titleInput = document.querySelector('#title');
+  var locationInput = document.querySelector('#location');
+
+  if (titleInput.value.trim() === '' || locationInput.value.trim() === '') {
+    alert('qqqqq');
+    return false;
+  }
+
+  closeCreatePostModal();
+
+  var post = {
+    title: titleInput.value,
+    location: locationInput.value,
+    id: new Date().toISOString(),
+    image: `http://placehold.it/500x320?text=${titleInput.value}`
+  };
+
+  if ('serviceWorker' in navigator && 'SyncManager' in window) {
+    navigator.serviceWorker.ready
+      .then(function(sw) {
+        writeData('sync-posts', post)
+          .then(function() {
+            return sw.sync.register('sync-new-posts');
+          })
+          .then(function() {
+            var data = { message: 'Your post was saved for syncing' };
+            snackbar.MaterialSnackbar.showSnackbar(data);
+          })
+          .catch(function(err) {
+            console.log('err', err);
+          });
+
+      });
+  } else {
+    sendData(post);
+  }
+});
+
+function sendData(data) {
+  return fetch(url, {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(data)
+  })
+    .then(function(res) {
+      var data = { message: 'Post sent!' };
+      snackbar.MaterialSnackbar.showSnackbar(data);
+      updateUI();
+    });
+}
 
 // if ('caches' in window) {
 //   caches.match(url)

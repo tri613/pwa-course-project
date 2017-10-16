@@ -2,6 +2,10 @@ var dbPromise = idb.open('posts-store', 1, db => {
     if (!db.objectStoreNames.contains('posts')) {
         db.createObjectStore('posts', { keyPath: 'id' });
     }
+
+    if (!db.objectStoreNames.contains('sync-posts')) {
+        db.createObjectStore('sync-posts', { keyPath: 'id' });
+    }
 });
 
 function writeData(st, data) {
@@ -24,7 +28,6 @@ function readAllData(st) {
 }
 
 function clearAllData(st) {
-    console.log('clear all data from idb');
     return dbPromise
         .then(db => {
             let tx = db.transaction(st, 'readwrite');
@@ -37,9 +40,8 @@ function clearAllData(st) {
 function deleteData(st, id) {
     return dbPromise
         .then(db => {
-            let tx = db.transaction(st);
-            let store = tx.objectStore(st, 'readwrite');
-            store.delete(id);
+            let tx = db.transaction(st, 'readwrite');
+            tx.objectStore(st).delete(id);
             return tx.complete;
         })
         .then(done => console.log(`delete ${id} completed!`))
