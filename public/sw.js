@@ -188,3 +188,41 @@ self.addEventListener('sync', function(event) {
         );
     }
 });
+
+self.addEventListener('notificationclick', function(event) {
+    var notification = event.notification;
+    var action = event.action;
+    console.log(event);
+
+    if (action === 'action') {
+    }
+
+    notification.close();
+});
+
+self.addEventListener('notificationclose', function(event) {
+
+});
+    
+
+self.addEventListener('push', function(event) {
+    console.log('Push notification received', event);
+
+    var data = {
+        title: 'new!',
+        content: 'Something new happened!'
+    };
+
+    if (event.data) {
+        data = JSON.parse(event.data.text());
+    }
+
+    event.waitUntil(
+        self.registration.showNotification(data.title, {
+            icon: "/src/images/icons/app-icon-96x96.png",
+            body: data.content,
+            badge: "/src/images/icons/app-icon-96x96.png",
+            tag: "new-notification",
+        })
+    );
+});

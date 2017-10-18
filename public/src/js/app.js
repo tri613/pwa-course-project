@@ -24,32 +24,76 @@ function askForNotificationPermission() {
         if (res !== 'granted') {
             alert('Why QQ Whyyyyy QQ');
         } else {
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.ready
-                    .then(function(sw) {
-                        sw.showNotification('Successfully subscribed! (from sw)', {
-                            icon: "/src/images/icons/app-icon-96x96.png",
-                            body: "Thanks for subscribing! We will keep you updated ;)",
-                            image: "/src/images/sf-boat.jpg",
-                            badge: "/src/images/icons/app-icon-96x96.png",
-                            tag: "cofirm-notification",
-                            renotify: false,
-                            actions: [
-                                {
-                                    action: 'confirm',
-                                    title: 'Okay',
-                                    icon: '/src/images/icons/app-icon-96x96.png'
-                                },
-                                {
-                                    action: 'cancel',
-                                    title: 'Cancel',
-                                    icon: '/src/images/icons/app-icon-96x96.png'
-                                }
-                            ]
-                        });
-                    });
-            }
+            subscribeNotification();
         }
+    });
+}
+
+function subscribeNotification() {
+    if (!('serviceWorker' in navigator)) {
+        return false;
+    }
+
+    var sw;
+    navigator.serviceWorker.ready
+        .then(function(swreg) {
+            sw = swreg;
+            return swreg.pushManager.getSubscription();
+        })
+        .then(function(sub) {
+            console.log('old sub', sub);
+            if (sub === null) {
+                var publicKey = 'BPDi5D0KmKcRa7JPyTCuSuQF7nWatmgBVnnnnnGAzKEVitLdo1bcfpv2-i4IrmcrIil_3bDCu7rwrnEl6qX2vaY';
+                var applicationServerKey = urlBase64ToUint8Array(publicKey);
+                return sw.pushManager.subscribe({
+                    applicationServerKey,
+                    userVisibleOnly: true
+                });
+            } else {
+
+            }
+        })
+        .then(function(newSub) {
+            console.log('newSub', newSub);
+            return fetch("https://my-first-pwa-ebf14.firebaseio.com/subscription.json", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                body: JSON.stringify(newSub)
+            })
+        })
+        .then(function(response) {
+            if (response.ok) {
+                sendNotification(sw);
+            }
+        })
+        .catch(function(err) {
+            console.log(err);
+        });
+}
+
+function sendNotification(sw) {
+    sw.showNotification('Successfully subscribed! (from sw)', {
+        icon: "/src/images/icons/app-icon-96x96.png",
+        body: "Thanks for subscribing! We will keep you updated ;)",
+        image: "/src/images/sf-boat.jpg",
+        badge: "/src/images/icons/app-icon-96x96.png",
+        tag: "cofirm-notification",
+        renotify: false,
+        actions: [
+            {
+                action: 'confirm',
+                title: 'Okay',
+                icon: '/src/images/icons/app-icon-96x96.png'
+            },
+            {
+                action: 'cancel',
+                title: 'Cancel',
+                icon: '/src/images/icons/app-icon-96x96.png'
+            }
+        ]
     });
 }
 
